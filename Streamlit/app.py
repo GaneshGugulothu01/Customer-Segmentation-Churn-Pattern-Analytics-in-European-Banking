@@ -1,7 +1,11 @@
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# ---------------------------
+# Page Configuration
+# ---------------------------
 st.set_page_config(
     page_title="European Banking Churn Dashboard",
     layout="wide"
@@ -9,15 +13,45 @@ st.set_page_config(
 
 st.title("🏦 Customer Segmentation & Churn Analytics")
 
-df = pd.read_csv("../Dataset/Processed_European_Bank.csv")
+# ---------------------------
+# Load Dataset
+# ---------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+csv_path = BASE_DIR / "Dataset" / "Processed_European_Bank.csv"
+
+# Show path for debugging (optional)
+st.write("Dataset Path:", csv_path)
+
+# Check if file exists
+if not csv_path.exists():
+    st.error(f"Dataset not found!\n\nExpected location:\n{csv_path}")
+    st.stop()
+
+# Read dataset
+df = pd.read_csv(csv_path)
+
+# ---------------------------
+# Sidebar Filters
+# ---------------------------
 st.sidebar.header("Filters")
 
 country = st.sidebar.multiselect(
     "Select Country",
-    df["Geography"].unique(),
+    options=df["Geography"].unique(),
     default=df["Geography"].unique()
 )
+
+gender = st.sidebar.multiselect(
+    "Select Gender",
+    options=df["Gender"].unique(),
+    default=df["Gender"].unique()
+)
+
+filtered_df = df[
+    (df["Geography"].isin(country)) &
+    (df["Gender"].isin(gender))
+]
 
 gender = st.sidebar.multiselect(
     "Select Gender",
